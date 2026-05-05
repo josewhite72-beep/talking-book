@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Talking Book · NathuraVitae</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root{--verde:#1a3d2a;--verde-m:#245c3e;--verde-c:#4a8c65;--crema:#f8f5ee;--dorado:#c9a227;--texto:#1a2310;--blanco:#fff;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:"Lato",sans-serif;background:var(--crema);color:var(--texto);min-height:100vh}
+.hdr{background:var(--verde);padding:14px 18px;display:flex;align-items:center;border-bottom:3px solid var(--dorado)}
+.hdr .logo{font-family:"Playfair Display",serif;font-size:17px;color:var(--crema)}
+.hdr .logo span{color:var(--dorado);font-style:italic}
+.hdr .badge{margin-left:auto;background:var(--dorado);color:var(--verde);font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:1px}
+.ai-panel{background:linear-gradient(135deg,#0f2419 0%,#1a3d2a 100%);padding:18px 16px;border-bottom:3px solid var(--dorado)}
+.ai-panel h2{font-family:"Playfair Display",serif;font-size:16px;color:var(--dorado);margin-bottom:4px}
+.ai-desc{font-size:12px;color:rgba(248,245,238,.7);margin-bottom:14px;line-height:1.5}
+.campo-dark{margin-bottom:10px}
+.campo-dark label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(248,245,238,.7);margin-bottom:5px}
+.campo-dark select,.campo-dark input{background:rgba(255,255,255,.08);border:1.5px solid rgba(201,162,39,.4);color:var(--crema);border-radius:8px;padding:9px 11px;width:100%;font-size:14px;font-family:"Lato",sans-serif}
+.campo-dark select option{background:#1a3d2a;color:var(--crema)}
+.plantilla-btns{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.btn-plantilla{padding:6px 12px;border:1.5px solid rgba(201,162,39,.4);background:rgba(255,255,255,.05);color:var(--crema);border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-plantilla.sel{background:var(--dorado);color:var(--verde);border-color:var(--dorado)}
+.divider{border:none;border-top:1px solid rgba(201,162,39,.2);margin:14px 0}
+.btn-ai{width:100%;padding:13px;background:var(--dorado);color:var(--verde);border:none;border-radius:10px;font-size:15px;font-family:"Playfair Display",serif;font-weight:700;cursor:pointer}
+.btn-ai:disabled{opacity:.5;cursor:not-allowed}
+.drop-zone{border:2px dashed rgba(201,162,39,.4);border-radius:10px;padding:16px;text-align:center;cursor:pointer;margin-bottom:10px;position:relative}
+.drop-zone.over{border-color:var(--dorado);background:rgba(201,162,39,.08)}
+.drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz-ico{font-size:28px;margin-bottom:6px}
+.dz-txt{font-size:12px;color:rgba(248,245,238,.7);line-height:1.5}
+.dz-hint{font-size:10px;color:rgba(248,245,238,.4);margin-top:4px}
+.plantas-cargadas{margin-bottom:12px;display:none}
+.plantas-cargadas label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(248,245,238,.7);margin-bottom:5px}
+.plantas-cargadas select{background:rgba(255,255,255,.08);border:1.5px solid rgba(201,162,39,.6);color:var(--crema);border-radius:8px;padding:9px 11px;width:100%;font-size:14px;font-family:"Lato",sans-serif}
+.plantas-cargadas select option{background:#1a3d2a}
+.badge-cargado{display:inline-block;background:var(--verde-c);color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px}
+.form-panel{background:var(--blanco);padding:18px 16px;border-bottom:1px solid #e0dbd0}
+.form-panel h2{font-family:"Playfair Display",serif;font-size:15px;color:var(--verde);margin-bottom:14px}
+.campo{margin-bottom:12px}
+.campo label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--verde-m);margin-bottom:4px}
+.campo input,.campo select{width:100%;padding:9px 11px;border:1.5px solid #d4cfc4;border-radius:8px;font-size:14px;font-family:"Lato",sans-serif;background:var(--crema);color:var(--texto)}
+.fila{display:flex;gap:10px}
+.fila .campo{flex:1}
+.paginas-editor{padding:16px;background:#f4f6fb;border-bottom:1px solid #e0dbd0}
+.paginas-editor h2{font-family:"Playfair Display",serif;font-size:15px;color:var(--verde);margin-bottom:12px}
+.pag-card{background:var(--blanco);border:1.5px solid #e0dbd0;border-radius:12px;padding:14px;margin-bottom:12px;transition:border-color .3s}
+.pag-card.ai-filled{border-color:var(--verde-c);box-shadow:0 0 0 1px rgba(74,140,101,.2)}
+.pag-card-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.pag-num-badge{background:var(--verde);color:var(--crema);font-size:11px;font-weight:700;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.btn-eliminar-pag{background:none;border:none;color:#c00;font-size:16px;cursor:pointer;padding:4px}
+.pag-campos{display:flex;flex-direction:column;gap:8px}
+.pag-campo-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--verde-m);margin-bottom:3px;display:block}
+.pag-textarea{width:100%;padding:8px 10px;border:1.5px solid #d4cfc4;border-radius:8px;font-size:13px;font-family:"Lato",sans-serif;background:var(--crema);color:var(--texto);resize:vertical;min-height:60px}
+.pag-textarea:focus{outline:none;border-color:var(--verde-c)}
+.color-row{display:flex;align-items:center;gap:10px}
+.color-preview{width:32px;height:32px;border-radius:6px;border:2px solid #d4cfc4;cursor:pointer;position:relative;overflow:hidden;flex-shrink:0}
+.color-preview input[type=color]{position:absolute;inset:-4px;width:calc(100% + 8px);height:calc(100% + 8px);border:none;cursor:pointer;opacity:0}
+.color-label{font-size:12px;color:#666}
+.img-selector{display:flex;align-items:center;gap:10px}
+.btn-img{padding:7px 12px;background:var(--crema);border:1.5px solid var(--dorado);border-radius:8px;font-size:12px;font-weight:700;color:var(--verde);cursor:pointer}
+.contador{font-size:11px;color:#888;text-align:right;margin-bottom:8px;font-style:italic}
+.btn-gen{width:100%;padding:13px;background:var(--verde);color:var(--crema);border:none;border-radius:10px;font-size:15px;font-family:"Playfair Display",serif;font-weight:700;cursor:pointer;margin-top:4px}
+.preview{padding:16px;display:none}
+.preview h2{font-family:"Playfair Display",serif;font-size:15px;color:var(--verde);margin-bottom:12px}
+.book-wrap{max-width:360px;margin:0 auto}
+.book-vp{width:100%;aspect-ratio:9/16;position:relative;overflow:hidden;border-radius:16px;box-shadow:0 8px 40px rgba(26,61,42,.2)}
+.pag{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:28px 22px 72px;text-align:center;opacity:0;transform:rotateY(90deg);transform-origin:left center;transition:transform .5s cubic-bezier(.4,0,.2,1),opacity .3s;backface-visibility:hidden}
+.pag.activa{opacity:1;transform:rotateY(0deg)}
+.pag.saliendo{opacity:0;transform:rotateY(-90deg)}
+.pag-linea-top{position:absolute;top:0;left:0;right:0;height:3px;background:var(--dorado)}
+.pag-num{position:absolute;bottom:60px;right:16px;font-size:10px;opacity:.3;font-family:"Playfair Display",serif;font-style:italic}
+.pag-deco{width:40px;height:2px;background:var(--dorado);margin:10px auto;border-radius:2px}
+.pag-tit{font-family:"Playfair Display",serif;font-size:20px;line-height:1.3;margin-bottom:6px;word-break:break-word}
+.pag-sub{font-size:12px;line-height:1.6;opacity:.8;word-break:break-word}
+.pag-body{font-size:13px;line-height:1.65;word-break:break-word;text-align:left;width:100%}
+.pag-img-portada{width:90px;height:90px;object-fit:cover;border-radius:50%;border:3px solid var(--dorado);margin-bottom:12px}
+.pag-img-rectangular{width:100%;height:130px;object-fit:cover;border-radius:10px;margin-bottom:12px}
+.pag-img-interior{width:100%;max-height:140px;object-fit:cover;border-radius:10px;margin-bottom:10px}
+.pag-lista{text-align:left;width:100%}
+.pag-lista li{font-size:12px;line-height:1.8;list-style:none;padding-left:16px;position:relative}
+.pag-lista li::before{content:"✓";position:absolute;left:0;color:var(--dorado);font-weight:700}
+.barra{position:absolute;bottom:0;left:0;right:0;background:rgba(26,61,42,.9);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:space-between;padding:10px 14px;z-index:10;border-top:1px solid rgba(201,162,39,.3)}
+.btn-nav{width:36px;height:36px;border-radius:50%;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.btn-nav:disabled{opacity:.3;cursor:not-allowed}
+.btn-tts{width:44px;height:44px;border-radius:50%;border:none;background:var(--dorado);color:var(--verde);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.btn-tts.hablando{animation:pulso .8s infinite}
+@keyframes pulso{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.pag-ind{color:var(--crema);font-size:12px;font-weight:700;min-width:40px;text-align:center}
+.btn-play-int{padding:7px 11px;border-radius:20px;border:none;background:var(--verde-c);color:white;font-size:11px;font-weight:700;cursor:pointer}
+.progreso{width:100%;height:3px;background:#e0dbd0;border-radius:2px;margin-top:8px;overflow:hidden}
+.progreso-fill{height:100%;background:var(--dorado);border-radius:2px;transition:width .4s}
+.panel{background:var(--blanco);border:1.5px solid #e0dbd0;border-radius:12px;padding:14px;margin-top:12px}
+.panel h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--verde);margin-bottom:12px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.toggle{width:44px;height:24px;background:#ccc;border-radius:12px;border:none;cursor:pointer;position:relative;transition:background .2s}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;background:white;border-radius:50%;transition:left .2s}
+.toggle.on{background:var(--verde)}
+.toggle.on::after{left:23px}
+.range-row{margin-bottom:10px}
+.range-lbl{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.range-lbl span:last-child{font-weight:700;color:var(--verde)}
+input[type=range]{width:100%;accent-color:var(--verde)}
+.acciones{display:flex;gap:8px;margin-top:10px}
+.btn-sec{flex:1;padding:10px 6px;border:2px solid var(--verde);background:transparent;color:var(--verde);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-sec:hover,.btn-sec.activo{background:var(--verde);color:var(--crema)}
+.instrucciones{background:var(--verde);color:var(--crema);border-radius:12px;padding:16px;margin-top:12px;font-size:13px;line-height:1.7}
+.instrucciones h3{font-family:"Playfair Display",serif;font-size:14px;color:var(--dorado);margin-bottom:8px}
+.instrucciones ol{padding-left:18px}
+.instrucciones li{margin-bottom:3px}
+.vacio{text-align:center;padding:36px 20px;color:var(--verde-m)}
+.vacio .ico{font-size:44px;margin-bottom:10px}
+.vacio p{font-size:14px;line-height:1.6}
+.nota{font-size:11px;color:#888;text-align:center;margin-top:8px;font-style:italic}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="logo">Talking<span>Book</span> &middot; NathuraVitae</div>
+  <div class="badge">&#127807; JSON EDITION</div>
+</div>
+<div class="ai-panel">
+  <h2>&#127807; Generador desde ficha de planta</h2>
+  <p class="ai-desc">Carga el JSON de una planta &mdash; el generador construye todas las p&aacute;ginas con los datos reales de la ficha. Sin internet, sin API key.</p>
+  <input type="file" id="fileInput" accept=".json" multiple style="display:none">
+  <button onclick="document.getElementById('fileInput').click()" style="width:100%;padding:16px;background:rgba(255,255,255,.08);border:2px dashed rgba(201,162,39,.5);border-radius:10px;color:var(--crema);font-size:14px;font-weight:700;font-family:Lato,sans-serif;cursor:pointer;margin-bottom:10px">
+    &#128194; Seleccionar JSON de planta
+  </button>
+  <div class="plantas-cargadas" id="plantasCargadas">
+    <label>Planta <span class="badge-cargado" id="badgeCargado">0</span></label>
+    <select id="selPlanta" onchange="seleccionarPlanta(this.value)">
+      <option value="">&#8212; Selecciona una planta &#8212;</option>
+    </select>
+  </div>
+  <div style="margin-bottom:12px">
+    <div class="campo-dark"><label>Formato</label></div>
+    <div class="plantilla-btns">
+      <button class="btn-plantilla sel" id="pt-carrusel" onclick="selPlantilla('carrusel')">&#128218; Carrusel educativo</button>
+      <button class="btn-plantilla" id="pt-protocolo" onclick="selPlantilla('protocolo')">&#128203; Protocolo de uso</button>
+      <button class="btn-plantilla" id="pt-cientifico" onclick="selPlantilla('cientifico')">&#128300; Dato cient&iacute;fico</button>
+      <button class="btn-plantilla" id="pt-flora" onclick="selPlantilla('flora')">&#127796; Flora Panam&aacute;</button>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <button class="btn-ai" id="btnGenerar" onclick="generarDesdeFicha()" disabled>
+    &#128218; Generar Talking Book desde ficha
+  </button>
+</div>
+<div class="form-panel">
+  <h2>&#9881;&#65039; Configuraci&oacute;n general</h2>
+  <div class="campo">
+    <label>T&iacute;tulo del libro</label>
+    <input type="text" id="tituloLibro" placeholder="Se rellena autom&aacute;ticamente">
+  </div>
+  <div class="fila">
+    <div class="campo">
+      <label>N&uacute;mero de p&aacute;ginas</label>
+      <select id="numPaginas" onchange="ajustarPaginas()">
+        <option value="4">4 p&aacute;ginas</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8" selected>8 p&aacute;ginas</option>
+      </select>
+    </div>
+    <div class="campo">
+      <label>Tipo de portada</label>
+      <select id="tipoPortada">
+        <option value="imagen-rectangular">Imagen rectangular</option>
+        <option value="imagen-circular">Imagen circular</option>
+        <option value="imagen-completa">Imagen de fondo</option>
+        <option value="solo-texto">Solo texto</option>
+      </select>
+    </div>
+  </div>
+</div>
+<div class="paginas-editor">
+  <h2>&#128196; Contenido de p&aacute;ginas</h2>
+  <div class="contador" id="contadorPags">8 p&aacute;ginas &middot; 0/8 im&aacute;genes</div>
+  <div id="listaPaginas"></div>
+</div>
+<div class="form-panel">
+  <h2>&#127897; Configuraci&oacute;n de voz</h2>
+  <div class="campo">
+    <label>Voz del dispositivo</label>
+    <select id="selVoz" style="width:100%;padding:8px 10px;border:1.5px solid #d4cfc4;border-radius:8px;font-size:13px;background:var(--crema);font-family:Lato,sans-serif">
+      <option value="">Voz predeterminada</option>
+    </select>
+  </div>
+  <div class="range-row">
+    <div class="range-lbl"><span>Velocidad</span><span id="lblVel">0.9&times;</span></div>
+    <input type="range" id="rVel" min="0.5" max="2" step="0.1" value="0.9" oninput="document.getElementById('lblVel').textContent=parseFloat(this.value).toFixed(1)+'x'">
+  </div>
+  <div class="range-row">
+    <div class="range-lbl"><span>Tono</span><span id="lblTono">1.0</span></div>
+    <input type="range" id="rTono" min="0.5" max="2" step="0.1" value="1" oninput="document.getElementById('lblTono').textContent=parseFloat(this.value).toFixed(1)">
+  </div>
+  <div class="range-row">
+    <div class="range-lbl"><span>Volumen</span><span id="lblVol">100%</span></div>
+    <input type="range" id="rVol" min="0" max="1" step="0.05" value="1" oninput="document.getElementById('lblVol').textContent=Math.round(this.value*100)+'%'">
+  </div>
+  <button onclick="probarVoz()" style="width:100%;padding:9px;background:var(--verde-c);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px">&#128266; Probar voz</button>
+  <button class="btn-gen" onclick="generarLibro()" style="margin-top:14px">&#128218; Generar Talking Book</button>
+</div>
+<div class="preview" id="preview">
+  <h2>&#128218; Vista previa</h2>
+  <div class="book-wrap">
+    <div class="book-vp" id="bookVp">
+      <div class="barra" id="barra">
+        <button class="btn-nav" id="btnAnt" onclick="navegar(-1)" disabled>&#8249;</button>
+        <button class="btn-tts" id="btnTTS" onclick="toggleTTS()">&#128266;</button>
+        <span class="pag-ind" id="pagInd">1 / 8</span>
+        <button class="btn-play-int" onclick="reproducirTodo()">&#9654; Play</button>
+        <button class="btn-nav" id="btnSig" onclick="navegar(1)">&#8250;</button>
+      </div>
+    </div>
+    <div class="progreso"><div class="progreso-fill" id="progresoFill" style="width:12.5%"></div></div>
+  </div>
+  <div class="panel">
+    <h3>&#9881;&#65039; Reproducci&oacute;n autom&aacute;tica</h3>
+    <div class="toggle-row"><span>Avance autom&aacute;tico</span><button class="toggle" id="togAuto" onclick="toggleAuto()"></button></div>
+    <div class="toggle-row"><span>Narraci&oacute;n continua</span><button class="toggle" id="togNarr" onclick="toggleNarr()"></button></div>
+  </div>
+  <div class="acciones">
+    <button class="btn-sec" onclick="reiniciar()">&#8635; Reiniciar</button>
+    <button class="btn-sec" id="btnEditar" onclick="toggleEdicion()">&#9999;&#65039; Editar texto</button>
+  </div>
+  <p class="nota">&#128161; Graba solo el &aacute;rea del libro &mdash; los controles no aparecen en el video</p>
+  <div class="instrucciones">
+    <h3>&#127916; C&oacute;mo grabar tu Reel</h3>
+    <ol>
+      <li>Ajusta voz y velocidad</li>
+      <li>Toca <strong>&#9654; Play</strong> dentro del libro</li>
+      <li>Activa la grabadora de pantalla con <strong>Audio interno</strong></li>
+      <li>El libro narra y pasa p&aacute;ginas solo</li>
+      <li>Detén la grabaci&oacute;n al terminar</li>
+    </ol>
+  </div>
+</div>
+<div class="vacio" id="vacio">
+  <div class="ico">&#128218;</div>
+  <p>Carga un JSON de planta arriba<br>y toca <strong>Generar Talking Book</strong></p>
+</div>
+<script>
+var pagAct=0,totPags=8,autoAvance=false,narrContinua=false,hablando=false,modoEdicion=false;
+var paginasData=[],imagenesPorPagina={},plantillaActual='carrusel',plantasBD={},plantaActual=null;
+var TIPOS={
+  portada:{label:'Portada',color:'#1a3d2a',colorTexto:'#f8f5ee'},
+  contenido:{label:'Contenido',color:'#f8f5ee',colorTexto:'#1a2310'},
+  cita:{label:'Cita/Dato',color:'#1c1008',colorTexto:'#f8f5ee'},
+  lista:{label:'Lista',color:'#f8f5ee',colorTexto:'#1a2310'},
+  advertencia:{label:'Advertencia',color:'#3d2a1a',colorTexto:'#f8f5ee'},
+  cierre:{label:'Cierre',color:'#1a3d2a',colorTexto:'#f8f5ee'}
+};
+
+function cargarArchivos(files){
+  if(!files||!files.length)return;
+  Array.from(files).forEach(function(file){
+    var r=new FileReader();
+    r.onload=function(e){
+      try{
+        var data=JSON.parse(e.target.result);
+        var lista=Array.isArray(data)?data:[data];
+        lista.forEach(function(p){
+          if(p.id||p.nombreComun){
+            var id=p.id||(p.nombreComun||'').toLowerCase().replace(/\s+/g,'-');
+            plantasBD[id]=p;
+          }
+        });
+        actualizarSelector();
+      }catch(err){alert('Error en '+file.name+': JSON invalido');}
+    };
+    r.readAsText(file);
+  });
+}
+
+function actualizarSelector(){
+  var sel=document.getElementById('selPlanta');
+  var ids=Object.keys(plantasBD).sort(function(a,b){return (plantasBD[a].nombreComun||a).localeCompare(plantasBD[b].nombreComun||b);});
+  sel.innerHTML='<option value="">-- Selecciona una planta --</option>';
+  ids.forEach(function(id){
+    var p=plantasBD[id],o=document.createElement('option');
+    o.value=id;o.textContent=(p.emoji||'')+(p.emoji?' ':'')+( p.nombreComun||id);
+    sel.appendChild(o);
+  });
+  document.getElementById('badgeCargado').textContent=ids.length+' planta'+(ids.length!=1?'s':'');
+  document.getElementById('plantasCargadas').style.display='block';
+}
+
+function seleccionarPlanta(id){plantaActual=plantasBD[id]||null;document.getElementById('btnGenerar').disabled=!plantaActual;}
+
+function selPlantilla(p){
+  plantillaActual=p;
+  document.querySelectorAll('.btn-plantilla').forEach(function(b){b.classList.remove('sel');});
+  var el=document.getElementById('pt-'+p);if(el)el.classList.add('sel');
+}
+
+function norm(p){
+  var compuestos=p.fotoquimica||(Array.isArray(p.principiosActivos)?p.principiosActivos.join(', '):'');
+  var props=typeof p.propiedades==='string'?p.propiedades:(Array.isArray(p.propiedades)?p.propiedades.map(function(x){return typeof x==='string'?x:(x.nombre||'');}).join(', '):'');
+  var dolencias=Array.isArray(p.dolencias)?p.dolencias.map(function(x){return typeof x==='string'?x:(x.nombre||'');}).join(', '):'';
+  var contra=typeof p.contraindicaciones==='string'?p.contraindicaciones:(Array.isArray(p.contraindicaciones)?p.contraindicaciones.join('. '):'');
+  var inter=typeof p.interaccionesMedicamentosas==='string'?p.interaccionesMedicamentosas:(Array.isArray(p.interaccionesMedicamentosas)?p.interaccionesMedicamentosas.join('. '):'');
+  var prep='';
+  if(typeof p.preparacion==='string')prep=p.preparacion;
+  else if(Array.isArray(p.preparacion)&&p.preparacion.length){var pr=p.preparacion[0];prep=(pr.instrucciones||'')+' Dosis: '+(pr.dosis||'')+(pr.duracion?'. '+pr.duracion:'');}
+  var fuente='';
+  if(Array.isArray(p.fuentes)&&p.fuentes.length){var f=p.fuentes[0];fuente=(f.autor||'')+'. '+(f.titulo||'')+' ('+(f.ano||f.year||f['año']||'')+')'+(f.doi?' DOI:'+f.doi:f.pmid?' PMID:'+f.pmid:'');}
+  var nivelMap={'A':'Nivel A - Evidencia solida (OMS/EMA)','B':'Nivel B - Buena evidencia clinica','C':'Nivel C - Uso tradicional documentado'};
+  var panama='';
+  if(p.disponibilidadPanama){var d=p.disponibilidadPanama;panama=(d.notaRegional||'')+(d.dondeConseguir?' Disponible: '+d.dondeConseguir:'');}
+  return {
+    nombre:p.nombreComun||p.id||'',cientifico:p.nombreCientifico||'',
+    partes:Array.isArray(p.partesUsadas)?p.partesUsadas.join(', '):(p.partesUsadas||''),
+    resumen:p.resumen||'',compuestos:compuestos,props:props,dolencias:dolencias,
+    contra:contra,inter:inter,prep:prep,fuente:fuente,
+    nivel:nivelMap[p.nivelEvidenciaGlobal]||'',
+    disclaimer:p.disclaimer||'Uso educativo. No sustituye consejo medico.',
+    panama:panama,usoTrad:p.usoTradicionalHistorico||'',emoji:p.emoji||''
+  };
+}
+
+function generarDesdeFicha(){
+  if(!plantaActual){alert('Selecciona una planta');return;}
+  var f=norm(plantaActual);
+  var pags=[];
+  if(plantillaActual==='carrusel'){
+    pags=[
+      {tipo:'portada',titulo:(f.emoji?f.emoji+' ':'')+f.nombre,subtitulo:f.cientifico,cuerpo:'',lista:'',
+       tts:'Hoy exploramos '+f.nombre+'. '+f.resumen},
+      {tipo:'cita',titulo:'Compuestos activos',cuerpo:f.compuestos?'"'+f.compuestos+'"':'"'+f.resumen.substring(0,100)+'"',lista:'',
+       tts:'Los compuestos activos son: '+f.compuestos},
+      {tipo:'contenido',titulo:'Para que sirve',cuerpo:(f.props?'Propiedades: '+f.props+'
+
+':'')+f.resumen,lista:'',
+       tts:f.nombre+' tiene propiedades '+f.props+'. '+f.resumen},
+      {tipo:'contenido',titulo:'Condiciones donde puede ayudar',cuerpo:f.dolencias||'Consulta la ficha en nathura-vitae.vercel.app',lista:'',
+       tts:'Condiciones documentadas: '+f.dolencias},
+      {tipo:'lista',titulo:'Como prepararla',cuerpo:'',lista:f.prep||'Ver ficha en nathura-vitae.vercel.app',
+       tts:'Preparacion: '+f.prep},
+      {tipo:'contenido',titulo:f.nivel||'Evidencia cientifica',cuerpo:f.fuente||f.resumen,lista:'',
+       tts:(f.nivel||'')+(f.fuente?'. '+f.fuente:'')},
+      {tipo:'advertencia',titulo:'Precauciones importantes',cuerpo:f.contra+(f.inter?'
+
+Interacciones: '+f.inter:''),lista:'',
+       tts:'Precauciones: '+f.contra+(f.inter?'. Interacciones: '+f.inter:'')},
+      {tipo:'cierre',titulo:'Ficha completa disponible',subtitulo:'nathura-vitae.vercel.app',cuerpo:f.disclaimer,lista:'',
+       tts:'Encuentra la ficha de '+f.nombre+' en nathura vitae punto vercel punto app. '+f.disclaimer}
+    ];
+  } else if(plantillaActual==='protocolo'){
+    pags=[
+      {tipo:'portada',titulo:'Guia de uso: '+f.nombre,subtitulo:f.cientifico,cuerpo:'',lista:'',tts:'Guia de uso de '+f.nombre+'. '+f.resumen},
+      {tipo:'contenido',titulo:'Para que se usa',cuerpo:f.resumen+(f.usoTrad?'
+
+Uso tradicional: '+f.usoTrad:''),lista:'',tts:f.resumen},
+      {tipo:'lista',titulo:'Como prepararla',cuerpo:'',lista:f.prep,tts:'Preparacion: '+f.prep},
+      {tipo:'contenido',titulo:'Compuestos activos',subtitulo:'Parte usada: '+f.partes,cuerpo:'Principios activos: '+f.compuestos+(f.props?'
+
+Propiedades: '+f.props:''),lista:'',tts:'Compuestos: '+f.compuestos},
+      {tipo:'contenido',titulo:'Evidencia cientifica',subtitulo:f.nivel||'',cuerpo:f.fuente||f.resumen,lista:'',tts:(f.nivel||'')+'. '+(f.fuente||f.resumen)},
+      {tipo:'advertencia',titulo:'Quien NO debe usarla',cuerpo:f.contra+(f.inter?'
+
+'+f.inter:''),lista:'',tts:'Contraindicaciones: '+f.contra},
+      {tipo:'cierre',titulo:f.nombre+' en NathuraVitae',subtitulo:'nathura-vitae.vercel.app',cuerpo:f.disclaimer,lista:'',tts:'Mas informacion en nathura vitae punto vercel punto app.'}
+    ];
+  } else if(plantillaActual==='cientifico'){
+    pags=[
+      {tipo:'portada',titulo:(f.emoji?f.emoji+' ':'')+f.nombre+': lo que dice la ciencia',subtitulo:f.cientifico,cuerpo:'',lista:'',tts:'Lo que dice la ciencia sobre '+f.nombre},
+      {tipo:'cita',titulo:'Compuesto clave',cuerpo:f.compuestos?'"'+f.compuestos+'"':'"'+f.resumen.substring(0,80)+'"',lista:'',tts:'Compuesto clave: '+f.compuestos},
+      {tipo:'contenido',titulo:'Que dice la evidencia',subtitulo:f.nivel||'',cuerpo:f.fuente||f.resumen,lista:'',tts:(f.nivel||'')+'. '+(f.fuente||f.resumen)},
+      {tipo:'contenido',titulo:'Mecanismo de accion',cuerpo:'Propiedades: '+f.props+'
+
+'+f.resumen,lista:'',tts:'Propiedades: '+f.props+'. '+f.resumen},
+      {tipo:'advertencia',titulo:'Limitaciones y precauciones',cuerpo:f.contra+(f.inter?'
+
+'+f.inter:''),lista:'',tts:'Precauciones: '+f.contra},
+      {tipo:'cierre',titulo:'Ficha completa con DOIs verificables',subtitulo:'nathura-vitae.vercel.app',cuerpo:f.disclaimer,lista:'',tts:'Referencias verificables en nathura vitae punto vercel punto app.'}
+    ];
+  } else {
+    pags=[
+      {tipo:'portada',titulo:(f.emoji?f.emoji+' ':'')+f.nombre,subtitulo:'Flora de Panama - '+f.cientifico,cuerpo:'',lista:'',tts:'Hoy exploramos '+f.nombre+', parte de nuestra flora. '+f.resumen},
+      {tipo:'cita',titulo:'Planta de nuestra tierra',cuerpo:f.panama||f.resumen.substring(0,120),lista:'',tts:f.panama||f.resumen},
+      {tipo:'contenido',titulo:'Uso tradicional',cuerpo:f.usoTrad||f.resumen,lista:'',tts:'Uso tradicional: '+(f.usoTrad||f.resumen)},
+      {tipo:'contenido',titulo:'Lo que dice la ciencia',subtitulo:f.nivel||'Nivel C - Uso tradicional',cuerpo:f.fuente||f.resumen,lista:'',tts:(f.nivel||'Nivel C')+(f.fuente?'. '+f.fuente:'')},
+      {tipo:'contenido',titulo:'Compuestos activos',subtitulo:'Parte usada: '+f.partes,cuerpo:'Principios activos: '+f.compuestos+(f.props?'
+
+Propiedades: '+f.props:''),lista:'',tts:'Compuestos: '+f.compuestos},
+      {tipo:'lista',titulo:'Usos documentados',cuerpo:'',lista:f.dolencias||f.props,tts:'Usos: '+f.dolencias},
+      {tipo:'advertencia',titulo:'Precauciones',cuerpo:f.contra+(f.inter?'
+
+'+f.inter:''),lista:'',tts:'Precauciones: '+f.contra},
+      {tipo:'cierre',titulo:'Parte de tu herencia natural',subtitulo:'nathura-vitae.vercel.app',cuerpo:f.disclaimer,lista:'',tts:f.nombre+' es parte de nuestra herencia. Mas en nathura vitae punto vercel punto app.'}
+    ];
+  }
+  paginasData=pags.map(function(p){
+    var t=p.tipo;
+    return {tipo:t,titulo:p.titulo||'',subtitulo:p.subtitulo||'',cuerpo:p.cuerpo||'',lista:p.lista||'',
+      color:TIPOS[t].color,colorTexto:TIPOS[t].colorTexto,ttsTexto:p.tts||''};
+  });
+  imagenesPorPagina={};
+  document.getElementById('numPaginas').value=paginasData.length;
+  document.getElementById('tituloLibro').value=f.nombre+' - NathuraVitae';
+  renderPaginas();
+  setTimeout(function(){document.querySelectorAll('.pag-card').forEach(function(c){c.classList.add('ai-filled');});},100);
+  document.querySelector('.paginas-editor').scrollIntoView({behavior:'smooth'});
+}
+
+function initPaginas(n){
+  paginasData=[];imagenesPorPagina={};
+  var def=['portada','contenido','contenido','contenido','contenido','contenido','advertencia','cierre'];
+  for(var i=0;i<n;i++){var t=def[i]||'contenido';paginasData.push({tipo:t,titulo:'',subtitulo:'',cuerpo:'',lista:'',color:TIPOS[t].color,colorTexto:TIPOS[t].colorTexto,ttsTexto:''});}
+  renderPaginas();
+}
+function ajustarPaginas(){initPaginas(parseInt(document.getElementById('numPaginas').value));}
+
+function renderPaginas(){
+  var c=document.getElementById('listaPaginas');
+  var ic=Object.keys(imagenesPorPagina).filter(function(k){return imagenesPorPagina[k];}).length;
+  document.getElementById('contadorPags').textContent=paginasData.length+' paginas - '+ic+'/8 imagenes';
+  var h='';
+  paginasData.forEach(function(p,i){
+    h+='<div class="pag-card" id="card'+i+'"><div class="pag-card-header"><div class="pag-num-badge">'+(i+1)+'</div>';
+    h+='<select style="border:none;background:transparent;font-size:12px;font-weight:700;color:var(--verde-m);flex:1" onchange="cambiarTipo('+i+',this.value)">';
+    Object.keys(TIPOS).forEach(function(t){h+='<option value="'+t+'"'+(p.tipo===t?' selected':'')+'>'+TIPOS[t].label+'</option>';});
+    h+='</select>';
+    if(i>0)h+='<button class="btn-eliminar-pag" onclick="eliminarPagina('+i+')">x</button>';
+    h+='</div><div class="pag-campos"><div class="color-row">';
+    h+='<div class="color-preview" style="background:'+p.color+'"><input type="color" value="'+p.color+'" oninput="cambiarColor('+i+','fondo',this.value)"></div>';
+    h+='<div class="color-preview" style="background:'+p.colorTexto+'"><input type="color" value="'+p.colorTexto+'" oninput="cambiarColor('+i+','texto',this.value)"></div>';
+    h+='<span class="color-label">Fondo - Texto</span></div>';
+    h+='<div><label class="pag-campo-label">Titulo</label><input type="text" class="pag-textarea" style="min-height:auto" value="'+escH(p.titulo)+'" oninput="paginasData['+i+'].titulo=this.value"></div>';
+    if(p.tipo==='portada'||p.tipo==='cierre'){h+='<div><label class="pag-campo-label">Subtitulo</label><input type="text" class="pag-textarea" style="min-height:auto" value="'+escH(p.subtitulo)+'" oninput="paginasData['+i+'].subtitulo=this.value"></div>';}
+    if(p.tipo!=='lista'){h+='<div><label class="pag-campo-label">'+(p.tipo==='cita'?'Cita':'Texto')+'</label><textarea class="pag-textarea" rows="3" oninput="paginasData['+i+'].cuerpo=this.value">'+escH(p.cuerpo)+'</textarea></div>';}
+    if(p.tipo==='lista'){h+='<div><label class="pag-campo-label">Pasos (uno por linea)</label><textarea class="pag-textarea" rows="4" oninput="paginasData['+i+'].lista=this.value">'+escH(p.lista)+'</textarea></div>';}
+    h+='<div><label class="pag-campo-label">Texto para narrar</label><textarea class="pag-textarea" rows="2" oninput="paginasData['+i+'].ttsTexto=this.value">'+escH(p.ttsTexto)+'</textarea></div>';
+    var ic2=Object.keys(imagenesPorPagina).filter(function(k){return imagenesPorPagina[k];}).length;
+    var ti=!!imagenesPorPagina[i],pu=ti||ic2<8;
+    h+='<div class="img-selector">';
+    if(pu)h+='<button class="btn-img" onclick="selImagen('+i+')">'+(ti?'Cambiar imagen':'Anadir imagen')+'</button>';
+    else h+='<button class="btn-img" style="opacity:.4" disabled>Max 8 imagenes</button>';
+    if(ti){h+='<img src="'+imagenesPorPagina[i]+'" style="width:48px;height:48px;border-radius:6px;object-fit:cover;border:1.5px solid var(--dorado)">';h+='<button style="background:none;border:none;color:#c00;font-size:13px;cursor:pointer" onclick="quitarImg('+i+')">X</button>';}
+    h+='</div></div></div>';
+  });
+  c.innerHTML=h;
+}
+
+function escH(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function cambiarTipo(i,t){paginasData[i].tipo=t;paginasData[i].color=TIPOS[t].color;paginasData[i].colorTexto=TIPOS[t].colorTexto;renderPaginas();}
+function cambiarColor(i,c,v){if(c==='fondo')paginasData[i].color=v;else paginasData[i].colorTexto=v;}
+function eliminarPagina(i){
+  if(paginasData.length<=2){alert('Minimo 2 paginas');return;}
+  paginasData.splice(i,1);
+  var ni={};Object.keys(imagenesPorPagina).forEach(function(k){var ki=parseInt(k);if(ki>i)ni[ki-1]=imagenesPorPagina[k];else if(ki<i)ni[ki]=imagenesPorPagina[k];});
+  imagenesPorPagina=ni;document.getElementById('numPaginas').value=paginasData.length;renderPaginas();
+}
+function selImagen(i){var inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){imagenesPorPagina[i]=ev.target.result;renderPaginas();};r.readAsDataURL(f);};inp.click();}
+function quitarImg(i){delete imagenesPorPagina[i];renderPaginas();}
+
+function generarLibro(){if(!paginasData.length){alert('Aniade paginas primero');return;}construirPags();pagAct=0;mostrarPag(0);document.getElementById('vacio').style.display='none';document.getElementById('preview').style.display='block';document.getElementById('preview').scrollIntoView({behavior:'smooth'});}
+
+function construirPags(){
+  var vp=document.getElementById('bookVp'),barra=document.getElementById('barra'),h='';
+  totPags=paginasData.length;
+  paginasData.forEach(function(p,i){
+    var bg=p.color||'#1a3d2a',tc=p.colorTexto||'#f8f5ee',img=imagenesPorPagina[i],tp=document.getElementById('tipoPortada').value;
+    h+='<div class="pag" id="pag'+i+'" style="background:'+bg+'"><div class="pag-linea-top"></div>';
+    if(p.tipo==='portada'){
+      if(img){if(tp==='imagen-completa')h+='<img src="'+img+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.5">';else if(tp==='imagen-rectangular')h+='<img src="'+img+'" class="pag-img-rectangular">';else h+='<img src="'+img+'" class="pag-img-portada">';}
+      if(p.titulo)h+='<div class="pag-tit" style="color:'+tc+'">'+p.titulo+'</div>';
+      h+='<div class="pag-deco"></div>';if(p.subtitulo)h+='<div class="pag-sub" style="color:'+tc+'">'+p.subtitulo+'</div>';
+    }else if(p.tipo==='contenido'){
+      if(img)h+='<img src="'+img+'" class="pag-img-interior">';
+      if(p.titulo)h+='<div class="pag-tit" style="color:'+tc+';font-size:16px">'+p.titulo+'</div>';
+      h+='<div class="pag-deco"></div>';if(p.cuerpo)h+='<div class="pag-body" style="color:'+tc+'">'+p.cuerpo.replace(/
+/g,'<br>')+'</div>';
+    }else if(p.tipo==='cita'){
+      h+='<div style="font-size:32px;margin-bottom:12px">!</div>';
+      if(p.titulo)h+='<div class="pag-sub" style="color:'+tc+';font-size:11px;margin-bottom:8px">'+p.titulo+'</div>';
+      if(p.cuerpo)h+='<div class="pag-tit" style="color:'+tc+';font-size:17px;line-height:1.4;font-style:italic">'+p.cuerpo+'</div>';
+    }else if(p.tipo==='lista'){
+      if(p.titulo)h+='<div class="pag-tit" style="color:'+tc+';font-size:16px;margin-bottom:8px">'+p.titulo+'</div>';
+      h+='<div class="pag-deco"></div>';if(img)h+='<img src="'+img+'" class="pag-img-interior">';
+      if(p.lista){h+='<ul class="pag-lista">';p.lista.split('
+').filter(Boolean).forEach(function(it){h+='<li style="color:'+tc+'">'+it+'</li>';});h+='</ul>';}
+    }else if(p.tipo==='advertencia'){
+      h+='<div style="font-size:28px;margin-bottom:10px">(!)</div>';
+      if(p.titulo)h+='<div class="pag-tit" style="color:'+tc+'">'+p.titulo+'</div>';
+      h+='<div class="pag-deco" style="background:#ff9944"></div>';if(p.cuerpo)h+='<div class="pag-sub" style="color:'+tc+';font-style:normal;line-height:1.7">'+p.cuerpo.replace(/
+/g,'<br>')+'</div>';
+    }else if(p.tipo==='cierre'){
+      if(img)h+='<img src="'+img+'" class="pag-img-portada">';else h+='<div style="font-size:34px;margin-bottom:12px">*</div>';
+      if(p.titulo)h+='<div class="pag-tit" style="color:'+tc+';font-size:16px">'+p.titulo+'</div>';
+      h+='<div class="pag-deco"></div>';if(p.subtitulo)h+='<div class="pag-sub" style="color:'+tc+'">'+p.subtitulo+'</div>';
+      if(p.cuerpo)h+='<div style="margin-top:10px;font-size:11px;color:'+tc+';opacity:.6">'+p.cuerpo+'</div>';
+    }
+    h+='<div class="pag-num" style="color:'+tc+';opacity:.3">'+(i+1)+'/'+totPags+'</div></div>';
+  });
+  vp.innerHTML=h;vp.appendChild(barra);
+}
+
+function mostrarPag(n){
+  document.querySelectorAll('.pag').forEach(function(p,i){p.classList.remove('activa','saliendo');if(i===n)p.classList.add('activa');});
+  pagAct=n;document.getElementById('pagInd').textContent=(n+1)+' / '+totPags;
+  document.getElementById('btnAnt').disabled=n===0;document.getElementById('btnSig').disabled=n===totPags-1;
+  document.getElementById('progresoFill').style.width=((n+1)/totPags*100)+'%';
+  if(narrContinua)narrar(n);
+}
+function navegar(dir){
+  detenerTTS();var nv=pagAct+dir;if(nv<0||nv>=totPags)return;
+  var pags=document.querySelectorAll('.pag');pags[pagAct].classList.add('saliendo');
+  setTimeout(function(){pags[pagAct].classList.remove('activa','saliendo');mostrarPag(nv);},280);
+}
+
+var abrev=[[/cdta/gi,'cucharadita'],[/cdtas/gi,'cucharaditas'],[/cda/gi,'cucharada'],[/ml/gi,'mililitros'],[/min/gi,'minutos']];
+function expandir(t){abrev.forEach(function(p){t=t.replace(p[0],p[1]);});return t;}
+function textoPags(){return paginasData.map(function(p){if(p.ttsTexto&&p.ttsTexto.trim())return p.ttsTexto;var pts=[];if(p.titulo)pts.push(p.titulo);if(p.subtitulo)pts.push(p.subtitulo);if(p.cuerpo)pts.push(p.cuerpo);if(p.lista)pts.push(p.lista.split('
+').join('. '));return pts.join('. ');});}
+function getVoz(){var voces=window.speechSynthesis.getVoices(),s=document.getElementById('selVoz').value,v=s?voces.find(function(x){return x.name===s;}):null;if(!v)v=voces.find(function(x){return x.lang.startsWith('es');});return v;}
+function narrar(n){
+  if(!('speechSynthesis' in window))return;detenerTTS();
+  var txt=expandir(textoPags()[n]||'');if(!txt){var pe=document.getElementById('pag'+n);if(pe)txt=expandir(pe.innerText||'');}if(!txt)return;
+  var utt=new SpeechSynthesisUtterance(txt);utt.lang='es-PA';
+  utt.rate=parseFloat(document.getElementById('rVel').value)||0.9;
+  utt.pitch=parseFloat(document.getElementById('rTono').value)||1;
+  utt.volume=parseFloat(document.getElementById('rVol').value)||1;
+  var v=getVoz();if(v)utt.voice=v;
+  utt.onstart=function(){hablando=true;var b=document.getElementById('btnTTS');b.classList.add('hablando');b.textContent='||';};
+  utt.onend=function(){hablando=false;var b=document.getElementById('btnTTS');b.classList.remove('hablando');b.textContent='>>>';if(autoAvance&&pagAct<totPags-1)setTimeout(function(){navegar(1);},700);};
+  window.speechSynthesis.speak(utt);
+}
+function detenerTTS(){window.speechSynthesis.cancel();hablando=false;var b=document.getElementById('btnTTS');if(b){b.classList.remove('hablando');b.textContent='>>>';}}
+function toggleTTS(){if(hablando){detenerTTS();return;}if(document.getElementById('preview').style.display==='none'){alert('Primero genera el Talking Book');return;}narrar(pagAct);}
+function probarVoz(){detenerTTS();var utt=new SpeechSynthesisUtterance('Esta es la voz de NathuraVitae.');utt.lang='es-PA';utt.rate=parseFloat(document.getElementById('rVel').value)||0.9;var v=getVoz();if(v)utt.voice=v;window.speechSynthesis.speak(utt);}
+function cargarVoces(){var voces=window.speechSynthesis.getVoices(),sel=document.getElementById('selVoz');if(!sel)return;sel.innerHTML='<option value="">Voz predeterminada</option>';var es=voces.filter(function(v){return v.lang.startsWith('es');});(es.length?es:voces).forEach(function(v){var o=document.createElement('option');o.value=v.name;o.textContent=v.name+' ('+v.lang+')';sel.appendChild(o);});}
+window.speechSynthesis.onvoiceschanged=cargarVoces;setTimeout(cargarVoces,600);
+function toggleAuto(){autoAvance=!autoAvance;document.getElementById('togAuto').classList.toggle('on',autoAvance);}
+function toggleNarr(){narrContinua=!narrContinua;document.getElementById('togNarr').classList.toggle('on',narrContinua);}
+function reiniciar(){detenerTTS();mostrarPag(0);}
+function reproducirTodo(){if(document.getElementById('preview').style.display==='none'){alert('Primero genera');return;}reiniciar();setTimeout(function(){autoAvance=true;narrContinua=true;document.getElementById('togAuto').classList.add('on');document.getElementById('togNarr').classList.add('on');narrar(0);},300);}
+function toggleEdicion(){
+  modoEdicion=!modoEdicion;var btn=document.getElementById('btnEditar');
+  if(modoEdicion){document.querySelectorAll('.pag .pag-tit,.pag .pag-sub,.pag .pag-body,.pag .pag-lista li').forEach(function(el){el.setAttribute('contenteditable','true');el.style.borderBottom='1px dashed rgba(201,162,39,.5)';el.addEventListener('focus',detenerTTS);});btn.textContent='Edicion activa';btn.classList.add('activo');}
+  else{document.querySelectorAll('[contenteditable]').forEach(function(el){el.removeAttribute('contenteditable');el.style.borderBottom='none';});btn.textContent='Editar texto';btn.classList.remove('activo');}
+}
+// wire up file input
+document.getElementById('fileInput').addEventListener('change', function(){cargarArchivos(this.files);});
+initPaginas(8);
+</script>
+</body>
+</html>
