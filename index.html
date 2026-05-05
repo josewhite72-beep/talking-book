@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Talking Book · NathuraVitae</title>
+<title>Talking Book · NathuraVitae v2.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
 :root{--verde:#1a3d2a;--verde-m:#245c3e;--verde-c:#4a8c65;--crema:#f8f5ee;--dorado:#c9a227;--texto:#1a2310;--blanco:#fff;}
@@ -120,6 +120,7 @@ input[type=range]{width:100%;accent-color:var(--verde)}
 <div class="hdr">
   <div class="logo">Talking<span>Book</span> &middot; NathuraVitae</div>
   <div class="badge">&#127807; JSON EDITION</div>
+  <button onclick="limpiarCache()" style="margin-left:8px;background:none;border:1px solid rgba(201,162,39,.5);color:var(--dorado);font-size:10px;padding:3px 8px;border-radius:10px;cursor:pointer">&#128465; Cache</button>
 </div>
 <div class="ai-panel">
   <h2>&#127807; Generador desde ficha de planta</h2>
@@ -694,6 +695,16 @@ function toggleEdicion(){
   }
 }
 document.getElementById('fileInput').addEventListener('change',function(){cargarArchivos(this.files);});
+
+function limpiarCache(){
+  if('caches' in window){
+    caches.keys().then(function(names){
+      names.forEach(function(name){caches.delete(name);});
+    });
+  }
+  // Force reload bypassing cache
+  window.location.reload(true);
+}
 
 function exportarTexto(){
   if(!paginasData.length){alert('Genera el Talking Book primero');return;}
