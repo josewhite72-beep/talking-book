@@ -221,7 +221,8 @@ input[type=range]{width:100%;accent-color:var(--verde)}
   </div>
   <div class="acciones">
     <button class="btn-sec" onclick="reiniciar()">&#8635; Reiniciar</button>
-    <button class="btn-sec" id="btnEditar" onclick="toggleEdicion()">&#9999;&#65039; Editar texto</button>
+    <button class="btn-sec" id="btnEditar" onclick="toggleEdicion()">&#9999;&#65039; Editar</button>
+    <button class="btn-sec" onclick="exportarTexto()">&#128196; Exportar</button>
   </div>
   <p class="nota">&#128161; Graba solo el &aacute;rea del libro &mdash; los controles no aparecen en el video</p>
   <div class="instrucciones">
@@ -693,6 +694,45 @@ function toggleEdicion(){
   }
 }
 document.getElementById('fileInput').addEventListener('change',function(){cargarArchivos(this.files);});
+
+function exportarTexto(){
+  if(!paginasData.length){alert('Genera el Talking Book primero');return;}
+  var titulo=document.getElementById('tituloLibro').value||'NathuraVitae';
+  var lineas=[];
+  lineas.push('# '+titulo);
+  lineas.push('Exportado desde Talking Book · NathuraVitae');
+  lineas.push('nathura-vitae.vercel.app');
+  lineas.push('');
+  lineas.push('---');
+  lineas.push('');
+  paginasData.forEach(function(p,i){
+    var tipo=p.tipo.toUpperCase();
+    lineas.push('## ['+(i+1)+'] '+tipo+': '+(p.titulo||''));
+    if(p.subtitulo)lineas.push('_'+p.subtitulo+'_');
+    lineas.push('');
+    if(p.cuerpo)lineas.push(p.cuerpo);
+    if(p.lista){
+      p.lista.split('\n').filter(Boolean).forEach(function(item){
+        lineas.push('- '+item);
+      });
+    }
+    if(p.ttsTexto&&p.ttsTexto.trim()){
+      lineas.push('');
+      lineas.push('> NARRACIÓN: '+p.ttsTexto);
+    }
+    lineas.push('');
+    lineas.push('---');
+    lineas.push('');
+  });
+  var txt=lineas.join('\n');
+  var blob=new Blob([txt],{type:'text/markdown;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download=titulo.replace(/[^a-zA-Z0-9-_]/g,'_')+'.md';
+  a.click();
+  URL.revokeObjectURL(url);
+}
 initPaginas(8);
 </script>
 </body>
